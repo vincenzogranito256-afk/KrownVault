@@ -7,18 +7,18 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
-        run: pip install pywebview pyinstaller
-      
+        run: pip install pywebview pyinstaller pyinstaller-hooks-contrib
+
       - name: Build EXE
-        run: pyinstaller --onefile --windowed --name KrownVault --add-data "KrownVault.html;." app.py
-      
+        run: pyinstaller --onefile --windowed --name KrownVault --add-data "KrownVault.html;." --collect-all webview app.py
+
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
