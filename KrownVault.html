@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" style="background:#000000">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>KrownVault</title>
+<style>html,body{background:#000000 !important}</style>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+body{
+  background:#000000 !important;color:#e8e8f0 !important;
+  font-family:'Syne',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding-bottom:80px;overflow-x:hidden;
+  transition:background .4s,color .4s;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.45;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+}
+
+/* blobs */
+.blob{position:fixed;width:520px;height:520px;border-radius:50%;filter:blur(115px);pointer-events:none;z-index:0;transition:background .4s}
+.blob.a{background:rgba(124,106,255,.14);top:-200px;left:-130px}
+.blob.b{background:rgba(255,106,173,.10);bottom:-200px;right:-130px}
+
+.wrap{position:relative;z-index:1;width:100%;max-width:460px;padding:0 20px}
+
+/* header */
+header{padding:52px 0 28px;text-align:center}
+.logo-icon{display:block;font-size:54px;margin-bottom:12px;animation:float 3s ease-in-out infinite,glow 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 18px rgba(124,106,255,.65))}50%{filter:drop-shadow(0 0 30px rgba(255,106,173,.85))}}
+.logo{font-size:38px;font-weight:800;letter-spacing:-1.5px;background:linear-gradient(135deg,#7c6aff,#ff6aad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo .vault{-webkit-text-fill-color:#e8e8f0;color:#e8e8f0;transition:color .4s,-webkit-text-fill-color .4s}
+.tagline{font-family:'Space Mono',monospace;font-size:10px;color:#44445a;letter-spacing:2.5px;text-transform:uppercase;margin-top:6px;transition:color .4s}
+.credits{margin-top:8px;font-family:'Space Mono',monospace;font-size:11px;color:#7c6aff}
+.version{font-family:'Space Mono',monospace;font-size:10px;color:#44445a;margin-top:4px;transition:color .4s}
+.theme-btn{margin-top:14px;background:#12121f;border:2px solid #7c6aff;border-radius:10px;color:#e8e8f0;font-size:14px;padding:8px 20px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;transition:background .4s,color .4s}
+
+/* tabs */
+.tabs{display:flex;background:#12121f;border:1px solid #1e1e35;border-radius:14px;padding:4px;margin-bottom:16px;gap:4px;transition:background .4s,border-color .4s}
+.tab{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;background:transparent;color:#44445a;transition:color .3s,background .3s}
+.tab.active{background:linear-gradient(135deg,#7c6aff,#9c6aff);color:#fff;box-shadow:0 4px 20px rgba(124,106,255,.4)}
+
+/* drop zone */
+.drop-zone{border:2px dashed #1e1e35;border-radius:20px;padding:32px 20px;text-align:center;cursor:pointer;background:#12121f;margin-bottom:12px;transition:background .4s,border-color .3s,box-shadow .3s}
+.drop-zone.over{border-color:#7c6aff;box-shadow:0 0 28px rgba(124,106,255,.25)}
+.di{font-size:38px;margin-bottom:10px;display:block;transition:transform .3s}
+.drop-zone.over .di{transform:scale(1.15) translateY(-4px)}
+.dt{font-size:15px;font-weight:700;margin-bottom:3px;transition:color .4s}
+.ds{font-family:'Space Mono',monospace;font-size:11px;color:#44445a;transition:color .4s}
+#fi{display:none}
+
+/* file list */
+.flist{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.fitem{display:flex;align-items:center;gap:11px;background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:11px 13px;animation:si .2s ease;transition:background .4s,border-color .4s}
+@keyframes si{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.fic{font-size:20px;flex-shrink:0}
+.fin{flex:1;min-width:0}
+.finame{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .4s}
+.fisz{font-family:'Space Mono',monospace;font-size:10px;color:#44445a;margin-top:2px;transition:color .4s}
+.fiwarn{font-family:'Space Mono',monospace;font-size:10px;color:#ffb86a;margin-top:2px}
+.firm{background:none;border:none;color:#44445a;cursor:pointer;font-size:17px;padding:4px;line-height:1;flex-shrink:0;transition:color .3s}
+
+/* password */
+.plabel{font-family:'Space Mono',monospace;font-size:10px;color:#44445a;letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;display:block;transition:color .4s}
+.pwrap{position:relative;margin-bottom:6px}
+.pinput{width:100%;background:#12121f;border:1px solid #1e1e35;border-radius:14px;color:#e8e8f0;font-family:'Space Mono',monospace;font-size:16px;padding:13px 48px 13px 17px;outline:none;-webkit-appearance:none;appearance:none;transition:background .4s,border-color .2s,color .4s,box-shadow .2s}
+.pinput:focus{border-color:#7c6aff;box-shadow:0 0 0 3px rgba(124,106,255,.15)}
+.pinput.err{border-color:#ff6a6a}
+.peye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:#44445a;cursor:pointer;font-size:18px;padding:4px;transition:color .4s}
+
+/* strength */
+.strength-bar-wrap{display:flex;gap:4px;margin-bottom:4px}
+.sbar{flex:1;height:4px;border-radius:2px;background:#1e1e35;transition:background .3s}
+.strength-label{font-family:'Space Mono',monospace;font-size:10px;color:#44445a;margin-bottom:10px;min-height:14px;transition:color .4s}
+.pw-err{font-family:'Space Mono',monospace;font-size:11px;color:#ff6a6a;margin-bottom:10px;min-height:16px}
+
+/* progress */
+.progress-wrap{display:none;margin-bottom:12px;background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:12px 14px;transition:background .4s,border-color .4s}
+.progress-wrap.show{display:block}
+.progress-label{font-family:'Space Mono',monospace;font-size:11px;color:#44445a;margin-bottom:8px;transition:color .4s}
+.progress-bar-bg{background:#1e1e35;border-radius:4px;height:6px;overflow:hidden;transition:background .4s}
+.progress-bar{height:6px;border-radius:4px;background:linear-gradient(90deg,#7c6aff,#ff6aad);width:0%;transition:width .3s}
+
+/* button */
+.abtn{width:100%;padding:17px;border:none;border-radius:16px;font-family:'Syne',sans-serif;font-size:17px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#7c6aff,#ff6aad);color:#fff;box-shadow:0 8px 30px rgba(124,106,255,.38);position:relative;overflow:hidden;transition:transform .15s,opacity .2s}
+.abtn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);pointer-events:none}
+.abtn:active{transform:scale(.97)}
+.abtn.loading{pointer-events:none;opacity:.7}
+.btext{display:flex;align-items:center;justify-content:center;gap:10px}
+.spin{width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.abtn.loading .spin{display:block}
+
+/* log */
+.log{margin-top:16px;display:flex;flex-direction:column;gap:7px}
+.litem{display:flex;align-items:flex-start;gap:9px;background:#12121f;border:1px solid #1e1e35;border-radius:12px;padding:11px 13px;animation:si .25s ease;transition:background .4s,border-color .4s}
+.litem.ok{border-color:rgba(106,255,160,.25)}
+.litem.er{border-color:rgba(255,106,106,.25)}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.litem.ok .ldot{background:#6affa0;box-shadow:0 0 8px #6affa0}
+.litem.er .ldot{background:#ff6a6a;box-shadow:0 0 8px #ff6a6a}
+.ltxt{font-family:'Space Mono',monospace;font-size:11px;line-height:1.65;color:#e8e8f0;word-break:break-all;flex:1;transition:color .4s}
+.lsub{color:#44445a;display:block;margin-top:2px;transition:color .4s}
+.dlbtn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:7px 14px;background:rgba(124,106,255,.15);border:1px solid rgba(124,106,255,.3);border-radius:8px;color:#7c6aff;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;text-decoration:none}
+.copybtn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;margin-left:6px;padding:7px 14px;background:rgba(106,255,160,.1);border:1px solid rgba(106,255,160,.25);border-radius:8px;color:#6affa0;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;cursor:pointer}
+
+/* misc */
+.divd{height:1px;background:#1e1e35;margin:20px 0;transition:background .4s}
+.ibox{background:#12121f;border:1px solid #1e1e35;border-radius:14px;padding:15px;font-family:'Space Mono',monospace;font-size:11px;color:#44445a;line-height:1.85;transition:background .4s,border-color .4s,color .4s}
+.ibox strong{color:#7c6aff}
+.about{background:#12121f;border:1px solid #1e1e35;border-radius:14px;padding:15px;font-family:'Space Mono',monospace;font-size:11px;color:#44445a;line-height:1.85;margin-top:10px;transition:background .4s,border-color .4s,color .4s}
+.about strong{color:#ff6aad}
+.footer{text-align:center;margin-top:16px;font-family:'Space Mono',monospace;font-size:10px;color:#44445a;transition:color .4s}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;border:1px solid #7c6aff;border-radius:12px;padding:12px 20px;font-family:'Space Mono',monospace;font-size:12px;color:#e8e8f0;z-index:999;transition:transform .3s;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== LIGHT MODE ===== */
+body.light{background:#f0f0ff !important;color:#111122 !important}
+body.light .blob.a{background:rgba(124,106,255,.07) !important}
+body.light .blob.b{background:rgba(255,106,173,.05) !important}
+body.light .logo .vault{-webkit-text-fill-color:#111122 !important;color:#111122 !important}
+body.light .tagline{color:#9999bb !important}
+body.light .version{color:#9999bb !important}
+body.light .theme-btn{background:#ffffff !important;color:#111122 !important}
+body.light .tabs{background:#ffffff !important;border-color:#ddddf0 !important}
+body.light .tab{color:#9999bb !important}
+body.light .tab.active{color:#ffffff !important}
+body.light .drop-zone{background:#ffffff !important;border-color:#ddddf0 !important}
+body.light .dt{color:#111122 !important}
+body.light .ds{color:#9999bb !important}
+body.light .fitem{background:#ffffff !important;border-color:#ddddf0 !important}
+body.light .finame{color:#111122 !important}
+body.light .fisz{color:#9999bb !important}
+body.light .firm{color:#9999bb !important}
+body.light .plabel{color:#9999bb !important}
+body.light .pinput{background:#ffffff !important;border-color:#ddddf0 !important;color:#111122 !important}
+body.light .peye{color:#9999bb !important}
+body.light .sbar{background:#ddddf0 !important}
+body.light .strength-label{color:#9999bb !important}
+body.light .progress-wrap{background:#ffffff !important;border-color:#ddddf0 !important}
+body.light .progress-label{color:#9999bb !important}
+body.light .progress-bar-bg{background:#ddddf0 !important}
+body.light .litem{background:#ffffff !important;border-color:#ddddf0 !important}
+body.light .litem.ok{border-color:rgba(106,255,160,.4) !important}
+body.light .litem.er{border-color:rgba(255,106,106,.4) !important}
+body.light .ltxt{color:#111122 !important}
+body.light .lsub{color:#9999bb !important}
+body.light .ibox{background:#ffffff !important;border-color:#ddddf0 !important;color:#9999bb !important}
+body.light .about{background:#ffffff !important;border-color:#ddddf0 !important;color:#9999bb !important}
+body.light .divd{background:#ddddf0 !important}
+body.light .footer{color:#9999bb !important}
+body.light .toast{background:#f0f0ff !important;color:#111122 !important}
+</style>
+</head>
+<body style="background:#000000">
+<div class="blob a"></div>
+<div class="blob b"></div>
+<div class="wrap">
+  <header>
+    <span class="logo-icon">👑</span>
+    <div class="logo">Krown<span class="vault">Vault</span></div>
+    <div class="tagline">by KrownSec &middot; AES-256 &middot; Offline &middot; No Upload</div>
+    <div class="credits">credits to @{ 罪 } /𝐾𝑟𝑜𝑤𝑛 𝘔𝘳.𝘯𝘹𝘺 ᴷˢ</div>
+    <div class="version">v2.0.0</div>
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()">☀️ Light Mode</button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tenc" onclick="setMode('encrypt')">🔒 Encrypt</button>
+    <button class="tab" id="tdec" onclick="setMode('decrypt')">🔓 Decrypt</button>
+  </div>
+
+  <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()">
+    <span class="di" id="di">📂</span>
+    <div class="dt" id="dt">Tap to add files</div>
+    <div class="ds" id="ds">or drag &amp; drop here</div>
+    <input type="file" id="fi" multiple>
+  </div>
+
+  <div class="flist" id="flist"></div>
+
+  <label class="plabel" for="pinput">Password</label>
+  <div class="pwrap">
+    <input class="pinput" type="password" id="pinput" placeholder="Enter password…" autocomplete="new-password" oninput="onPwInput()">
+    <button class="peye" onclick="togglePw('pinput')">👁</button>
+  </div>
+
+  <div class="strength-bar-wrap" id="sbarwrap">
+    <div class="sbar" id="sb1"></div><div class="sbar" id="sb2"></div>
+    <div class="sbar" id="sb3"></div><div class="sbar" id="sb4"></div>
+  </div>
+  <div class="strength-label" id="slabel">&nbsp;</div>
+
+  <div id="confirm-wrap">
+    <div class="pwrap">
+      <input class="pinput" type="password" id="pinput2" placeholder="Confirm password…" autocomplete="new-password">
+      <button class="peye" onclick="togglePw('pinput2')">👁</button>
+    </div>
+  </div>
+
+  <div class="pw-err" id="pw-err">&nbsp;</div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label" id="progress-label">Processing...</div>
+    <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+  </div>
+
+  <button class="abtn" id="abtn" onclick="run()">
+    <span class="btext"><div class="spin"></div><span id="blabel">🔒 Encrypt Files</span></span>
+  </button>
+
+  <div class="log" id="log"></div>
+  <div class="divd"></div>
+
+  <div class="ibox">
+    <strong>HOW IT WORKS</strong><br>
+    Everything runs <strong>in your browser</strong>. Files never leave your device.<br>
+    Uses <strong>AES-256-CTR</strong> + PBKDF2 (200k rounds).<br>
+    Encrypted files get a <strong>.enc</strong> extension.<br>
+    To decrypt, switch tab &amp; use the <strong>same password</strong>.<br>
+    Max recommended: <strong>50MB per file</strong>
+  </div>
+
+  <div class="about">
+    <strong>ABOUT KROWNVAULT</strong><br>
+    Free, offline-first file encryption by KrownSec.<br>
+    No servers. No accounts. No tracking.<br><br>
+    <strong>CREDITS</strong><br>
+    @{ 罪 } /𝐾𝑟𝑜𝑤𝑛 𝘔𝘳.𝘯𝘹𝘺 ᴷˢ
+  </div>
+
+  <div class="footer">KrownVault v2.0.0 &middot; KrownSec &copy; 2025</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+let mode='encrypt',files=[],dark=true;
+const MAGIC=new Uint8Array([0x56,0x4C,0x54,0x52,0x31]);
+
+function toggleTheme(){
+  dark=!dark;
+  document.body.classList.toggle('light',!dark);
+  document.getElementById('theme-btn').textContent=dark?'☀️ Light Mode':'🌙 Dark Mode';
+  // Force Safari to repaint every element
+  const bg=dark?'#000000':'#f0f0ff';
+  const card=dark?'#12121f':'#ffffff';
+  const border=dark?'#1e1e35':'#ddddf0';
+  const text=dark?'#e8e8f0':'#111122';
+  const muted=dark?'#44445a':'#9999bb';
+  document.body.style.background=bg;
+  document.body.style.color=text;
+  document.querySelectorAll('.tabs,.drop-zone,.fitem,.litem,.ibox,.about,.progress-wrap,.theme-btn').forEach(el=>{el.style.background=card;el.style.borderColor=border});
+  document.querySelectorAll('.pinput').forEach(el=>{el.style.background=card;el.style.borderColor=border;el.style.color=text});
+  document.querySelectorAll('.dt,.finame,.ltxt').forEach(el=>el.style.color=text);
+  document.querySelectorAll('.ds,.fisz,.firm,.plabel,.peye,.tagline,.version,.footer,.lsub,.strength-label,.progress-label,.ibox,.about').forEach(el=>el.style.color=muted);
+  document.querySelectorAll('.sbar').forEach(el=>{if(!el.style.background||el.style.background===el.style.background)el.style.background=border});
+  document.querySelector('.divd').style.background=border;
+  const vault=document.querySelector('.logo .vault');
+  if(vault){vault.style.color=text;vault.style.webkitTextFillColor=text;}
+  document.getElementById('theme-btn').style.background=card;
+  document.getElementById('theme-btn').style.color=text;
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('tenc').classList.toggle('active',m==='encrypt');
+  document.getElementById('tdec').classList.toggle('active',m==='decrypt');
+  document.getElementById('blabel').textContent=m==='encrypt'?'🔒 Encrypt Files':'🔓 Decrypt Files';
+  document.getElementById('di').textContent=m==='encrypt'?'📂':'🗂';
+  document.getElementById('log').innerHTML='';
+  document.getElementById('pw-err').innerHTML='&nbsp;';
+  document.getElementById('confirm-wrap').style.display=m==='encrypt'?'block':'none';
+  document.getElementById('sbarwrap').style.display=m==='encrypt'?'flex':'none';
+  document.getElementById('slabel').style.display=m==='encrypt'?'block':'none';
+}
+
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles([...e.dataTransfer.files])});
+document.getElementById('fi').addEventListener('change',e=>{addFiles([...e.target.files]);e.target.value=''});
+
+function addFiles(nf){nf.forEach(f=>{if(!files.find(x=>x.name===f.name&&x.size===f.size))files.push(f)});render()}
+function removeFile(i){files.splice(i,1);render()}
+function render(){
+  const el=document.getElementById('flist');el.innerHTML='';
+  files.forEach((f,i)=>{
+    const ext=f.name.split('.').pop().toLowerCase();
+    const ic=ext==='enc'?'🔒':['jpg','jpeg','png','gif','webp'].includes(ext)?'🖼':ext==='pdf'?'📄':['mp4','mov'].includes(ext)?'🎬':['mp3','wav','m4a'].includes(ext)?'🎵':'📝';
+    const d=document.createElement('div');d.className='fitem';
+    d.innerHTML=`<span class="fic">${ic}</span><div class="fin"><div class="finame">${esc(f.name)}</div><div class="fisz">${fmt(f.size)}</div>${f.size>100*1024*1024?'<div class="fiwarn">⚠ Large file — may be slow</div>':''}</div><button class="firm" onclick="removeFile(${i})">✕</button>`;
+    el.appendChild(d);
+  });
+  const c=files.length;
+  document.getElementById('dt').textContent=c?`${c} file${c>1?'s':''} selected`:'Tap to add files';
+  document.getElementById('ds').textContent=c?'Tap to add more':'or drag & drop here';
+}
+
+function onPwInput(){
+  const pw=document.getElementById('pinput').value;
+  const score=calcStrength(pw);
+  const colors=['','#ff6a6a','#ffb86a','#7c6aff','#6affa0'];
+  const labels=['','Weak','Fair','Good','Strong'];
+  [1,2,3,4].forEach(i=>{document.getElementById('sb'+i).style.background=i<=score?colors[score]:(dark?'#1e1e35':'#ddddf0')});
+  document.getElementById('slabel').textContent=pw.length?labels[score]:'\u00a0';
+  document.getElementById('slabel').style.color=pw.length?colors[score]:(dark?'#44445a':'#9999bb');
+  document.getElementById('pw-err').innerHTML='&nbsp;';
+  document.getElementById('pinput').classList.remove('err');
+}
+function calcStrength(pw){
+  if(!pw.length)return 0;
+  let s=0;
+  if(pw.length>=6)s++;if(pw.length>=10)s++;
+  if(/[A-Z]/.test(pw)&&/[0-9]/.test(pw))s++;
+  if(/[^A-Za-z0-9]/.test(pw))s++;
+  return Math.min(s,4)||1;
+}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function fmt(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(1)+' MB'}
+function togglePw(id){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password'}
+function showErr(msg){document.getElementById('pw-err').textContent='⚠ '+msg;document.getElementById('pinput').classList.add('err');document.getElementById('pinput').focus()}
+function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
+function setProgress(pct,label){
+  document.getElementById('progress-wrap').classList.toggle('show',pct>=0&&pct<=100);
+  document.getElementById('progress-bar').style.width=pct+'%';
+  document.getElementById('progress-label').textContent=label||'';
+}
+
+async function deriveKey(pw,salt){
+  const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptBuf(buf,pw){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveKey(pw,salt);
+  const enc=await crypto.subtle.encrypt({name:'AES-GCM',iv,tagLength:128},key,buf);
+  const out=new Uint8Array(5+16+12+enc.byteLength);
+  out.set(MAGIC,0);out.set(salt,5);out.set(iv,21);out.set(new Uint8Array(enc),33);
+  return out;
+}
+async function decryptBuf(buf,pw){
+  const v=new Uint8Array(buf);
+  for(let i=0;i<5;i++)if(v[i]!==MAGIC[i])throw new Error('Not a valid KrownVault file');
+  const salt=v.slice(5,21),iv=v.slice(21,33),payload=v.slice(33);
+  const key=await deriveKey(pw,salt);
+  try{
+    return await crypto.subtle.decrypt({name:'AES-GCM',iv,tagLength:128},key,payload);
+  }catch(e){
+    throw new Error('Wrong password or file is corrupted');
+  }
+}
+
+async function run(){
+  const pw=document.getElementById('pinput').value;
+  document.getElementById('pw-err').innerHTML='&nbsp;';
+  document.getElementById('pinput').classList.remove('err');
+  if(!files.length){showToast('⚠ Add at least one file!');return}
+  if(!pw){showErr('Password is required.');return}
+  if(pw.length<6){showErr('At least 6 characters required.');return}
+  if(!/[A-Z]/.test(pw)){showErr('Must contain at least 1 uppercase letter.');return}
+  if(mode==='encrypt'){
+    const pw2=document.getElementById('pinput2').value;
+    if(pw!==pw2){showErr('Passwords do not match.');return}
+  }
+  const btn=document.getElementById('abtn');btn.classList.add('loading');
+  document.getElementById('log').innerHTML='';
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    setProgress(Math.round((i/files.length)*100),`Processing ${i+1} of ${files.length}: ${f.name}`);
+    try{
+      const buf=await f.arrayBuffer();let bytes,name;
+      if(mode==='encrypt'){bytes=await encryptBuf(buf,pw);name=f.name+'.enc'}
+      else{bytes=new Uint8Array(await decryptBuf(buf,pw));name=f.name.endsWith('.enc')?f.name.slice(0,-4):f.name+'.dec'}
+      addLog(true,f.name,name,URL.createObjectURL(new Blob([bytes])),bytes.byteLength,bytes);
+    }catch(e){addLog(false,f.name,null,null,0,null,e.message)}
+  }
+  btn.classList.remove('loading');setProgress(-1,'');
+  if(mode==='encrypt'){document.getElementById('pinput').value='';document.getElementById('pinput2').value='';onPwInput()}
+  files=[];render();
+  showToast(mode==='encrypt'?'✅ Encryption complete!':'✅ Decryption complete!');
+}
+
+function addLog(ok,inN,outN,url,sz,bytes,err){
+  const log=document.getElementById('log'),item=document.createElement('div');
+  item.className='litem '+(ok?'ok':'er');
+  let inner='<div class="ldot"></div><div class="ltxt">';
+  if(ok){
+    inner+=`✅ <strong>${esc(inN)}</strong><span class="lsub">→ ${esc(outN)} · ${fmt(sz)}</span><br>`;
+    inner+=`<a class="dlbtn" href="${url}" download="${esc(outN)}">⬇ Save ${esc(outN)}</a>`;
+    if(bytes&&sz<500*1024)inner+=`<button class="copybtn" onclick="navigator.clipboard.writeText('${btoa(String.fromCharCode(...new Uint8Array(bytes.buffer||bytes).slice(0,50000)))}').then(()=>showToast('📋 Copied!'))">📋 Copy</button>`;
+  }else{inner+=`❌ <strong>${esc(inN)}</strong><span class="lsub">${esc(err||'Unknown error')}</span>`}
+  item.innerHTML=inner+'</div>';
+  log.appendChild(item);
+}
+
+setMode('encrypt');
+</script>
+</body>
+</html>
