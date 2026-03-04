@@ -20,7 +20,7 @@ jobs:
         run: pyinstaller --onefile --windowed --name KrownVault --add-data "KrownVault.html;." app.py
       
       - name: Upload EXE
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: KrownVault
           path: dist/KrownVault.exe
